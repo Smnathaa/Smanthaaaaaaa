@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Cinta 💖</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+      color: #fff;
+    }
+
+    .game-container {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+
+    canvas {
+      background: rgba(255,255,255,0.2);
+      border-radius: 15px;
+      margin-top: 10px;
+    }
+
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+      background: #ff4b5c;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #ff1c39;
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <h1>💖 Game Cinta 💖</h1>
+    <p>Gunakan tombol panah ◀️ ▶️ untuk menangkap hati!</p>
+    <canvas id="gameCanvas" width="500" height="600"></canvas>
+    <div class="controls">
+      <button onclick="startGame()">▶️ Mulai Game</button>
+      <button onclick="restartGame()">🔄 Restart</button>
+    </div>
+    <h2 id="score">Skor: 0</h2>
+    <h2 id="gameOver" style="display:none;">💔 Game Over 💔</h2>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let basket = { x: 200, y: 550, width: 100, height: 20, speed: 20 };
+    let hearts = [];
+    let score = 0;
+    let gameRunning = false;
+    let heartFallSpeed = 2;
+    let heartInterval;
+
+    // Gambar keranjang
+    function drawBasket() {
+      ctx.fillStyle = "red";
+      ctx.fillRect(basket.x, basket.y, basket.width, basket.height);
+    }
+
+    // Gambar hati
+    function drawHeart(x, y) {
+      ctx.fillStyle = "pink";
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.bezierCurveTo(x - 10, y - 10, x - 25, y + 10, x, y + 25);
+      ctx.bezierCurveTo(x + 25, y + 10, x + 10, y - 10, x, y);
+      ctx.fill();
+    }
+
+    // Update posisi hati
+    function updateHearts() {
+      for (let i = 0; i < hearts.length; i++) {
+        hearts[i].y += heartFallSpeed;
+
+        // Tangkap hati
+        if (
+          hearts[i].y + 20 >= basket.y &&
+          hearts[i].x >= basket.x &&
+          hearts[i].x <= basket.x + basket.width
+        ) {
+          score++;
+          document.getElementById("score").innerText = "Skor: " + score;
+          hearts.splice(i, 1);
+          i--;
+        }
+        // Jika jatuh ke tanah → game over
+        else if (hearts[i].y > canvas.height) {
+          gameOver();
+        }
+      }
+    }
+
+    // Gambar semua hati
+    function drawHearts() {
+      for (let h of hearts) {
+        drawHeart(h.x, h.y);
+      }
+    }
+
+    // Tambah hati baru
+    function spawnHeart() {
+      let x = Math.random() * (canvas.width - 20) + 10;
+      hearts.push({ x: x, y: 0 });
+    }
+
+    // Game loop
+    function gameLoop() {
+      if (!gameRunning) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      drawBasket();
+      updateHearts();
+      drawHearts();
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    // Kontrol keyboard
+    document.addEventListener("keydown", function (e) {
+      if (!gameRunning) return;
+      if (e.key === "ArrowLeft" && basket.x > 0) {
+        basket.x -= basket.speed;
+      } else if (e.key === "ArrowRight" && basket.x + basket.width < canvas.width) {
+        basket.x += basket.speed;
+      }
+    });
+
+    // Mulai game
+    function startGame() {
+      gameRunning = true;
+      score = 0;
+      hearts = [];
+      document.getElementById("score").innerText = "Skor: 0";
+      document.getElementById("gameOver").style.display = "none";
+      heartInterval = setInterval(spawnHeart, 1500);
+      gameLoop();
+    }
+
+    // Game over
+    function gameOver() {
+      gameRunning = false;
+      clearInterval(heartInterval);
+      document.getElementById("gameOver").style.display = "block";
+    }
+
+    // Restart game
+    function restartGame() {
+      basket.x = 200;
+      hearts = [];
+      score = 0;
+      document.getElementById("score").innerText = "Skor: 0";
+      document.getElementById("gameOver").style.display = "none";
+      gameRunning = true;
+      heartInterval = setInterval(spawnHeart, 1500);
+      gameLoop();
+    }
+  </script>
+</body>
+</html>
