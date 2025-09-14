@@ -1,1 +1,1 @@
-halo saya berhasil melakukan push di git dengan aman
+smantha orangbaik
